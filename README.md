@@ -47,6 +47,7 @@ Twitter: <a href="https://twitter.com/private_bower">@private_bower</a>, <a href
 *   Cache public registry
 *   Cache public git repositories
 *   Cache public svn repositories
+*   Cache public hg repositories
 *   Web UI with package details
 *   Web UI package management
 *   Blacklist public packages
@@ -114,6 +115,16 @@ Must be a valid JSON
             "protocol": "svn",
             "publicAccessURL" : null,
             "refreshTimeout": 10
+       },
+        "hg": {
+            "enabled": false,
+            "cacheDirectory": "./hgRepoCache",
+            "host": "localhost",
+            "port": 8000,
+            "protocol": "hg",
+            "publicAccessURL" : null,
+            "refreshTimeout": 10,
+			"webdirConfig":"C:/PATH/TO/webdir.config"
         }
     },
     "proxySettings" : {
@@ -147,13 +158,14 @@ Must be a valid JSON
 | authentication.key                         | Authentication key (Auth-Key header)                                                 | password                              |
 | repositoryCache.(svn, git).enabled         | Public repository caching enabled                                                    | false                                 |
 | repositoryCache.cachePrivate               | Also cache privately registered packages                                             | false                                 |
-| repositoryCache.(svn, git).host            | Server's host name for repository access                                             | localhost                             |
-| repositoryCache.(svn, git).port            | Port to open repository server on                                                    | 7891, 6789                            |
-| repositoryCache.(svn, git).protocol        | Protocol the mirrored repositories will use                                          | git, svn, https, http                 |
-| repositoryCache.(svn, git).publicAccessURL | Public address to access repository cache (useful if repository is behind an apache) | null                                  |
-| repositoryCache.(svn, git).cacheDirectory  | Directory where the public repository cache will save repositories                   | ./svnRepoCache, ./gitRepoCache        |
-| repositoryCache.(svn, git).refreshTimeout  | Time to wai between repository cache refresh (minutes)                               | 10 minutes                            |
-| repositoryCache.(svn, git).parameters.X    | Custom parameters for git-daemon and svnserve                                        | undefined                             |
+| repositoryCache.(svn, git, hg).host            | Server's host name for repository access                                             | localhost                             |
+| repositoryCache.(svn, git, hg).port            | Port to open repository server on                                                    | 7891, 6789, 8000                      |
+| repositoryCache.(svn, git, hg).protocol        | Protocol the mirrored repositories will use                                          | git, svn, https, http                 |
+| repositoryCache.(svn, git, hg).publicAccessURL | Public address to access repository cache (useful if repository is behind an apache) | null                                  |
+| repositoryCache.(svn, git, hg).cacheDirectory  | Directory where the public repository cache will save repositories                   | ./svnRepoCache, ./gitRepoCache        |
+| repositoryCache.(svn, git, hg).refreshTimeout  | Time to wai between repository cache refresh (minutes)                               | 10 minutes                            |
+| repositoryCache.(svn, git, hg).parameters.X    | Custom parameters for git-daemon and svnserve                                        | undefined                             |
+| repositoryCache.(hg).webdirConfig    		 | hg serve config value																	| undefined |
 | proxySettings.enabled                      | Enable the proxy, use the proxy to call the bower remote repo                        | false                                 |
 | proxySettings.host                         | Proxy host                                                                           | proxy                                 |
 | proxySettings.username                     | Proxy username                                                                       | name                                  |
@@ -165,6 +177,28 @@ Must be a valid JSON
 
 
 
+#Mercurial
+
+##webdirConfig
+Config
+```json
+{
+	"hg": {
+        "enabled": true,
+		"cacheDirectory": "./hgRepoCache",
+        "protocol": "hg",
+		"webdirConfig":"C:/ABSOLUTE/PATH/webdir.config"
+	}
+}
+```
+
+webdir.config
+```
+[paths]
+/repos = PATH\TO\hgRepoCache\*
+/somerepo = PATH\repo\
+```
+Notice that globs are allowed, but try to make PATH absolute. See https://www.mercurial-scm.org/wiki/PublishingRepositories#multiple for more info.
 
 #Usage
 
@@ -201,6 +235,21 @@ Config
 ```json
 {
   "registry": "http://yourPrivateBowerRepo:6789/my-private-bower",
+  "timeout": 300000
+}
+```
+
+advanced .bowerrc
+```json
+{
+  "registry":{
+    "search":[
+      "https://bower.herokuapp.com",
+      "http://yourPrivateBowerRepo:6789/my-private-bower"
+    ],
+	"publish": "http://yourPrivateBowerRepo:6789/my-private-bower",
+	"register": "http://yourPrivateBowerRepo:6789/my-private-bower"
+  },
   "timeout": 300000
 }
 ```
@@ -273,6 +322,7 @@ Add ```Auth-Key``` header to request.
 >See github.com/nomiddlename/log4js-node for more information
 
 #Tips for usage
+
 ##Server as a service
 - [Installing on Ubuntu](https://github.com/Hacklone/private-bower/wiki/Installing%20on%20Ubuntu)
 - [Install as a Windows service](https://github.com/Hacklone/private-bower/wiki/Install%20as%20a%20Windows%20service)
