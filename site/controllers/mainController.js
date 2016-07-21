@@ -29,7 +29,7 @@ angular.module('PrivateBower')
             $http.get('packages')
                 .success(function(packages) {
                     self.packages = packages.map(function(pack) {
-                        pack.siteUrl = pack.url.replace('git://', 'https://');
+                        pack.siteUrl = pack.url.replace('git://', 'https://').replace('hg+https://', 'https://');
 
                         return pack;
                     });
